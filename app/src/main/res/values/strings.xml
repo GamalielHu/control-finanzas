@@ -23,7 +23,7 @@
     <string name="descripcion">Descripción</string>
     <string name="guardar">Guardar</string>
     <string name="eliminar">Eliminar</string>
-    <string name="restar_personales">Restar también los gastos personales</string>
+    <string name="vincular">Vincular Trabajo y Personal</string>
     <string name="mensual">Mensual (12 meses)</string>
     <string name="semanal">Semanal (12 semanas)</string>
     <string name="hoy">Hoy</string>

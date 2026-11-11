@@ -9,12 +9,16 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import java.util.Calendar
 
-/** Registrar o editar un ingreso diario de la heladería (Cerpi / Cementerio, Mañana / Tarde). */
+/**
+ * Registrar o editar un ingreso: de la heladería (Cerpi / Cementerio, Mañana / Tarde)
+ * o personal (solo fecha, monto y nota).
+ */
 class IngresoActivity : AppCompatActivity() {
 
     private lateinit var db: DatabaseHelper
     private var id = 0L
     private var fecha = Formato.hoy()
+    private var ambito = Modo.TRABAJO
 
     private lateinit var btnFecha: Button
     private lateinit var grupoLugar: RadioGroup
@@ -37,8 +41,16 @@ class IngresoActivity : AppCompatActivity() {
 
         id = intent.getLongExtra("id", 0L)
         val existente = if (id != 0L) db.obtener(id) else null
+        ambito = existente?.ambito ?: (intent.getStringExtra(Modo.EXTRA) ?: Modo.TRABAJO)
+        val personal = ambito == Modo.PERSONAL
+        if (personal) findViewById<android.view.View>(R.id.contLugarTurno).visibility = android.view.View.GONE
+        title = when {
+            existente != null && personal -> "Editar ingreso personal"
+            existente != null -> "Editar ingreso de la heladería"
+            personal -> "Ingreso personal"
+            else -> "Ingreso de la heladería"
+        }
         if (existente != null) {
-            title = "Editar ingreso"
             fecha = existente.fecha
             grupoLugar.check(if (existente.lugar == DatabaseHelper.CEMENTERIO) R.id.rbCementerio else R.id.rbCerpi)
             grupoTurno.check(if (existente.turno == DatabaseHelper.TARDE) R.id.rbTarde else R.id.rbManana)
@@ -75,30 +87,31 @@ class IngresoActivity : AppCompatActivity() {
     }
 
     private fun guardar() {
-        val lugar = when (grupoLugar.checkedRadioButtonId) {
+        val personal = ambito == Modo.PERSONAL
+        val lugar = if (personal) null else when (grupoLugar.checkedRadioButtonId) {
             R.id.rbCerpi -> DatabaseHelper.CERPI
             R.id.rbCementerio -> DatabaseHelper.CEMENTERIO
             else -> null
         }
-        val turno = when (grupoTurno.checkedRadioButtonId) {
+        val turno = if (personal) null else when (grupoTurno.checkedRadioButtonId) {
             R.id.rbManana -> DatabaseHelper.MANANA
             R.id.rbTarde -> DatabaseHelper.TARDE
             else -> null
         }
         val monto = Formato.leerMonto(edtMonto.text.toString())
         when {
-            lugar == null -> aviso("Elige el lugar: Cerpi o Cementerio")
-            turno == null -> aviso("Elige el turno: Mañana o Tarde")
+            !personal && lugar == null -> aviso("Elige el lugar: Cerpi o Cementerio")
+            !personal && turno == null -> aviso("Elige el turno: Mañana o Tarde")
             monto == null || monto <= 0 -> { edtMonto.error = "Escribe un monto válido"; edtMonto.requestFocus() }
             else -> {
                 db.guardar(
                     Movimiento(
                         id = id, fecha = fecha, tipo = DatabaseHelper.INGRESO,
-                        ambito = DatabaseHelper.HELADERIA, lugar = lugar, turno = turno,
+                        ambito = ambito, lugar = lugar, turno = turno,
                         monto = monto, nota = edtNota.text.toString().trim()
                     )
                 )
-                getSharedPreferences("ajustes", MODE_PRIVATE).edit()
+                if (lugar != null) getSharedPreferences("ajustes", MODE_PRIVATE).edit()
                     .putString("ultimo_lugar", lugar).apply()
                 Toast.makeText(this, "Ingreso guardado: ${Formato.bs(monto)}", Toast.LENGTH_SHORT).show()
                 finish()

@@ -26,6 +26,10 @@ class MainActivity : AppCompatActivity() {
     private lateinit var paneles: List<View>
     private var tabActual = 0
 
+    /** HELADERIA (Trabajo) o PERSONAL, elegido en la pantalla de inicio. */
+    private var modo = Modo.TRABAJO
+    private val personal get() = modo == Modo.PERSONAL
+
     // Movimientos
     private val mesVisto: Calendar = Calendar.getInstance().apply { set(Calendar.DAY_OF_MONTH, 1) }
     private val adaptador = MovimientoAdapter()
@@ -46,7 +50,18 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         db = DatabaseHelper.get(this)
+        modo = intent.getStringExtra(Modo.EXTRA) ?: Modo.TRABAJO
         supportActionBar?.elevation = 0f
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        title = if (personal) "Personal" else "Trabajo · Heladería"
+        if (personal) {
+            val morado = ContextCompat.getColor(this, R.color.personal)
+            supportActionBar?.setBackgroundDrawable(android.graphics.drawable.ColorDrawable(morado))
+            window.statusBarColor = morado
+            findViewById<View>(R.id.tabs).setBackgroundColor(morado)
+            findViewById<Button>(R.id.btnNuevoGasto).backgroundTintList =
+                android.content.res.ColorStateList.valueOf(morado)
+        }
 
         paneles = listOf(
             findViewById(R.id.panelMovimientos),
@@ -109,10 +124,10 @@ class MainActivity : AppCompatActivity() {
             mesVisto.add(Calendar.MONTH, 1); refrescarMovimientos()
         }
         findViewById<Button>(R.id.btnNuevoIngreso).setOnClickListener {
-            startActivity(Intent(this, IngresoActivity::class.java))
+            startActivity(Intent(this, IngresoActivity::class.java).putExtra(Modo.EXTRA, modo))
         }
         findViewById<Button>(R.id.btnNuevoGasto).setOnClickListener {
-            startActivity(Intent(this, GastoActivity::class.java))
+            startActivity(Intent(this, GastoActivity::class.java).putExtra(Modo.EXTRA, modo))
         }
     }
 
@@ -120,7 +135,7 @@ class MainActivity : AppCompatActivity() {
         val (desde, hasta) = rangoMes(mesVisto)
         findViewById<TextView>(R.id.txtMes).text =
             "${Formato.MESES_LARGOS[mesVisto.get(Calendar.MONTH)]} ${mesVisto.get(Calendar.YEAR)}"
-        val movs = db.listar(desde, hasta)
+        val movs = db.listar(desde, hasta).filter { it.ambito == modo }
         adaptador.datos = movs
         adaptador.notifyDataSetChanged()
         findViewById<TextView>(R.id.txtVacio).visibility = if (movs.isEmpty()) View.VISIBLE else View.GONE
@@ -151,11 +166,15 @@ class MainActivity : AppCompatActivity() {
             val marca = v.findViewById<View>(R.id.marca)
             val fecha = Formato.mostrar(m.fecha)
             if (m.tipo == DatabaseHelper.INGRESO) {
-                titulo.text = "${m.lugar} · ${m.turno}"
+                titulo.text = if (m.lugar != null) "${m.lugar} · ${m.turno}" else "Ingreso personal"
                 detalle.text = if (m.nota.isBlank()) fecha else "$fecha · ${m.nota}"
                 monto.text = "+ ${Formato.bs(m.monto)}"
                 monto.setTextColor(cIngreso)
-                marca.setBackgroundColor(if (m.lugar == DatabaseHelper.CEMENTERIO) cCementerio else cCerpi)
+                marca.setBackgroundColor(when (m.lugar) {
+                    DatabaseHelper.CEMENTERIO -> cCementerio
+                    DatabaseHelper.CERPI -> cCerpi
+                    else -> cIngreso
+                })
             } else {
                 val personal = m.ambito == DatabaseHelper.PERSONAL
                 titulo.text = if (personal) "Gasto personal" else "Gasto heladería"
@@ -178,10 +197,9 @@ class MainActivity : AppCompatActivity() {
         grupo.setOnCheckedChangeListener { _, id ->
             prefs.edit().putInt("periodo", id).apply(); refrescarResumen()
         }
-        val sw = findViewById<SwitchMaterial>(R.id.swPersonales)
-        sw.isChecked = prefs.getBoolean("restar_personales", true)
+        val sw = findViewById<SwitchMaterial>(R.id.swVincular)
         sw.setOnCheckedChangeListener { _, activo ->
-            prefs.edit().putBoolean("restar_personales", activo).apply(); refrescarResumen()
+            Modo.setVinculado(this, activo); refrescarResumen()
         }
     }
 
@@ -207,39 +225,91 @@ class MainActivity : AppCompatActivity() {
             else if (desde == hasta) Formato.mostrar(desde)
             else "Del ${Formato.mostrar(desde)} al ${Formato.mostrar(hasta)}"
 
+        val vinc = Modo.vinculado(this)
+        val sw = findViewById<SwitchMaterial>(R.id.swVincular)
+        if (sw.isChecked != vinc) sw.isChecked = vinc
+
         val I = DatabaseHelper.INGRESO
         val G = DatabaseHelper.GASTO
-        val cerpi = db.suma(desde, hasta, I, lugar = DatabaseHelper.CERPI)
-        val cementerio = db.suma(desde, hasta, I, lugar = DatabaseHelper.CEMENTERIO)
-        val ingresos = cerpi + cementerio
-        val gHeladeria = db.suma(desde, hasta, G, ambito = DatabaseHelper.HELADERIA)
-        val gPersonal = db.suma(desde, hasta, G, ambito = DatabaseHelper.PERSONAL)
-        val gananciaHeladeria = ingresos - gHeladeria
-        val restar = findViewById<SwitchMaterial>(R.id.swPersonales).isChecked
-        val real = gananciaHeladeria - (if (restar) gPersonal else 0.0)
+        val H = DatabaseHelper.HELADERIA
+        val P = DatabaseHelper.PERSONAL
+        val cerpi = db.suma(desde, hasta, I, ambito = H, lugar = DatabaseHelper.CERPI)
+        val cementerio = db.suma(desde, hasta, I, ambito = H, lugar = DatabaseHelper.CEMENTERIO)
+        val ingH = cerpi + cementerio
+        val gH = db.suma(desde, hasta, G, ambito = H)
+        val ganH = ingH - gH
+        val ingP = db.suma(desde, hasta, I, ambito = P)
+        val gP = db.suma(desde, hasta, G, ambito = P)
+        val saldoP = ingP - gP
+        val total = ganH + saldoP   // vinculado: todo junto
 
         val cont = findViewById<LinearLayout>(R.id.contBalance)
         cont.removeAllViews()
-        fila(cont, "Ingresos Cerpi", Formato.bs(cerpi), cCerpi)
-        fila(cont, "Ingresos Cementerio", Formato.bs(cementerio), cCementerio)
-        fila(cont, "Total ingresos", Formato.bs(ingresos), cIngreso, negrita = true)
-        fila(cont, "Gastos de la heladería", "− " + Formato.bs(gHeladeria), cHeladeria)
-        fila(cont, "Ganancia de la heladería", Formato.bs(gananciaHeladeria),
-            if (gananciaHeladeria < 0) cGasto else cTexto, negrita = true)
-        fila(cont, "Gastos personales", "− " + Formato.bs(gPersonal), cPersonal)
+        val titulo = findViewById<TextView>(R.id.lblBalance)
+        val grande = findViewById<TextView>(R.id.txtGananciaReal)
+        val nota = findViewById<TextView>(R.id.txtGananciaNota)
+        val resultado: Double
 
-        findViewById<TextView>(R.id.txtGananciaReal).apply {
-            text = Formato.bs(real)
-            setTextColor(if (real < 0) cGasto else cIngreso)
+        if (!personal) {
+            fila(cont, "Ingresos Cerpi", Formato.bs(cerpi), cCerpi)
+            fila(cont, "Ingresos Cementerio", Formato.bs(cementerio), cCementerio)
+            fila(cont, "Total ingresos", Formato.bs(ingH), cIngreso, negrita = true)
+            fila(cont, "Gastos de la heladería", "− " + Formato.bs(gH), cHeladeria)
+            fila(cont, "Ganancia de la heladería", Formato.bs(ganH), if (ganH < 0) cGasto else cTexto, negrita = true)
+            if (vinc) {
+                fila(cont, "Ingresos personales", "+ " + Formato.bs(ingP), cIngreso)
+                fila(cont, "Gastos personales", "− " + Formato.bs(gP), cPersonal)
+                titulo.text = "Ganancia real (vinculado)"
+                nota.text = "Heladería + ingresos personales − gastos personales"
+                resultado = total
+            } else {
+                titulo.text = "Ganancia de la heladería"
+                nota.text = "Ingresos − gastos de la heladería"
+                resultado = ganH
+            }
+        } else {
+            fila(cont, "Ingresos personales", Formato.bs(ingP), cIngreso)
+            fila(cont, "Gastos personales", "− " + Formato.bs(gP), cPersonal)
+            fila(cont, "Saldo personal", Formato.bs(saldoP), if (saldoP < 0) cGasto else cTexto, negrita = true)
+            if (vinc) {
+                fila(cont, "Ganancia de la heladería", (if (ganH < 0) "− " else "+ ") + Formato.bs(kotlin.math.abs(ganH)), cPrimario)
+                titulo.text = "Saldo total (vinculado)"
+                nota.text = "Saldo personal + ganancia de la heladería"
+                resultado = total
+            } else {
+                titulo.text = "Saldo personal"
+                nota.text = "Ingresos − gastos personales"
+                resultado = saldoP
+            }
         }
-        findViewById<TextView>(R.id.txtGananciaNota).text =
-            if (restar) "Ingresos − gastos heladería − gastos personales"
-            else "Ingresos − gastos heladería (sin restar lo personal)"
+        grande.text = Formato.bs(resultado)
+        grande.setTextColor(if (resultado < 0) cGasto else cIngreso)
 
-        findViewById<PieChartView>(R.id.tortaGastos).setDatos(
-            listOf("Heladería" to gHeladeria, "Personal" to gPersonal),
-            intArrayOf(cHeladeria, cPersonal)
-        )
+        // Torta: a dónde va el dinero
+        val tortaTitulo = findViewById<TextView>(R.id.lblTortaGastos)
+        val datos = ArrayList<Pair<String, Double>>()
+        val colores = ArrayList<Int>()
+        fun parte(n: String, v: Double, c: Int) { if (v > 0) { datos.add(n to v); colores.add(c) } }
+        if (vinc) {
+            tortaTitulo.text = "¿A dónde va el dinero? (todo junto)"
+            parte("Gastos heladería", gH, cHeladeria)
+            parte("Gastos personales", gP, cPersonal)
+            parte("Queda", total, cIngreso)
+        } else if (!personal) {
+            tortaTitulo.text = "¿A dónde va lo vendido?"
+            parte("Gastos heladería", gH, cHeladeria)
+            parte("Ganancia", ganH, cIngreso)
+        } else {
+            tortaTitulo.text = "¿A dónde va tu dinero?"
+            parte("Gastos personales", gP, cPersonal)
+            parte("Queda", saldoP, cIngreso)
+        }
+        findViewById<PieChartView>(R.id.tortaGastos).setDatos(datos, colores.toIntArray())
+
+        findViewById<View>(R.id.cardLugares).visibility = if (personal) View.GONE else View.VISIBLE
+        findViewById<View>(R.id.cardTurnos).visibility = if (personal) View.GONE else View.VISIBLE
+        if (personal) return
+
         findViewById<PieChartView>(R.id.tortaLugares).setDatos(
             listOf("Cerpi" to cerpi, "Cementerio" to cementerio),
             intArrayOf(cCerpi, cCementerio)
@@ -250,14 +320,14 @@ class MainActivity : AppCompatActivity() {
         var mejor = "" to 0.0
         for (lugar in listOf(DatabaseHelper.CERPI, DatabaseHelper.CEMENTERIO)) {
             for (turno in listOf(DatabaseHelper.MANANA, DatabaseHelper.TARDE)) {
-                val v = db.suma(desde, hasta, I, lugar = lugar, turno = turno)
+                val v = db.suma(desde, hasta, I, ambito = H, lugar = lugar, turno = turno)
                 fila(turnos, "$lugar · $turno", Formato.bs(v),
                     if (lugar == DatabaseHelper.CERPI) cCerpi else cCementerio)
                 if (v > mejor.second) mejor = "$lugar · $turno" to v
             }
         }
-        val tm = db.suma(desde, hasta, I, turno = DatabaseHelper.MANANA)
-        val tt = db.suma(desde, hasta, I, turno = DatabaseHelper.TARDE)
+        val tm = db.suma(desde, hasta, I, ambito = H, turno = DatabaseHelper.MANANA)
+        val tt = db.suma(desde, hasta, I, ambito = H, turno = DatabaseHelper.TARDE)
         fila(turnos, "Total Mañana", Formato.bs(tm), cTexto, negrita = true)
         fila(turnos, "Total Tarde", Formato.bs(tt), cTexto, negrita = true)
         if (mejor.second > 0) fila(turnos, "Mejor turno", mejor.first, cPrimario, negrita = true)
@@ -328,59 +398,84 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        val vinc = Modo.vinculado(this)
+        val unidad = if (semanal) "semana" else "mes"
         val ingresos = db.ingresosAgrupados(agrupar, desde, hasta)
-        val gastos = db.gastosHeladeriaAgrupados(agrupar, desde, hasta)
+        val gastosH = db.gastosHeladeriaAgrupados(agrupar, desde, hasta)
+        val pers = db.totalesAgrupados(agrupar, DatabaseHelper.PERSONAL, desde, hasta)
         val sCerpi = DoubleArray(12) { ingresos[claves[it]]?.get(0) ?: 0.0 }
         val sCementerio = DoubleArray(12) { ingresos[claves[it]]?.get(1) ?: 0.0 }
-        val sGanancia = DoubleArray(12) { sCerpi[it] + sCementerio[it] - (gastos[claves[it]] ?: 0.0) }
+        val sGanH = DoubleArray(12) { sCerpi[it] + sCementerio[it] - (gastosH[claves[it]] ?: 0.0) }
+        val sIngP = DoubleArray(12) { pers[claves[it]]?.get(0) ?: 0.0 }
+        val sGasP = DoubleArray(12) { pers[claves[it]]?.get(1) ?: 0.0 }
+        val sTotal = DoubleArray(12) { sGanH[it] + sIngP[it] - sGasP[it] }
 
-        findViewById<BarChartView>(R.id.barras).setDatos(
-            etiquetas, listOf(sCerpi, sCementerio), listOf("Cerpi", "Cementerio"),
-            intArrayOf(cCerpi, cCementerio)
-        )
-        findViewById<BarChartView>(R.id.barrasGanancia).setDatos(
-            etiquetas, listOf(sGanancia), listOf("Ingresos − gastos heladería"),
-            intArrayOf(cPrimario)
-        )
-
-        // Análisis de picos
-        val unidad = if (semanal) "semana" else "mes"
+        val barras = findViewById<BarChartView>(R.id.barras)
+        val barras2 = findViewById<BarChartView>(R.id.barrasGanancia)
         val sb = StringBuilder()
-        fun pico(nombre: String, serie: DoubleArray) {
+
+        fun pico(nombre: String, serie: DoubleArray, verbo: String) {
             val i = serie.indices.maxByOrNull { serie[it] } ?: return
             if (serie[i] <= 0) {
-                sb.append("• $nombre: sin ventas registradas.\n"); return
+                sb.append("• $nombre: sin registros.\n"); return
             }
-            val conDatos = serie.filter { it > 0 }
-            val prom = conDatos.average()
-            sb.append("• $nombre: mejor $unidad ${nombresLargos[i]} con ${Formato.bs(serie[i])}")
-            sb.append(" (promedio ${Formato.bs(prom)} por $unidad con ventas).\n")
-        }
-        pico("Cerpi", sCerpi)
-        pico("Cementerio", sCementerio)
-        pico("Total heladería", DoubleArray(12) { sCerpi[it] + sCementerio[it] })
-
-        val ultimo = sCerpi[11] + sCementerio[11]
-        val anterior = sCerpi[10] + sCementerio[10]
-        if (anterior > 0) {
-            val cambio = (ultimo - anterior) / anterior * 100
-            sb.append(String.format(java.util.Locale.US,
-                "• Este %s va %s%.0f%% frente al anterior.\n", unidad, if (cambio >= 0) "+" else "", cambio))
+            val prom = serie.filter { it > 0 }.average()
+            sb.append("• $nombre: $verbo $unidad ${nombresLargos[i]} con ${Formato.bs(serie[i])}")
+            sb.append(" (promedio ${Formato.bs(prom)} por $unidad).\n")
         }
 
-        val dias = db.ingresosPorDiaSemana(desde, hasta)
-        val mejorDia = dias.indices.maxByOrNull { dias[it] } ?: 0
-        if (dias[mejorDia] > 0) {
-            sb.append("• Día que más se vende: ${Formato.DIAS[mejorDia]} (promedio ${Formato.bs(dias[mejorDia])}).\n")
-        }
-        val tm = db.suma(desde, hasta, DatabaseHelper.INGRESO, turno = DatabaseHelper.MANANA)
-        val tt = db.suma(desde, hasta, DatabaseHelper.INGRESO, turno = DatabaseHelper.TARDE)
-        if (tm + tt > 0) {
-            sb.append("• Turno más fuerte: ${if (tm >= tt) "Mañana" else "Tarde"} ")
-            sb.append("(Mañana ${Formato.bs(tm)} · Tarde ${Formato.bs(tt)}).")
+        if (!personal) {
+            findViewById<TextView>(R.id.lblBarras).text = "Ventas: Cerpi vs Cementerio"
+            barras.setDatos(etiquetas, listOf(sCerpi, sCementerio), listOf("Cerpi", "Cementerio"),
+                intArrayOf(cCerpi, cCementerio))
+            findViewById<TextView>(R.id.lblBarrasGanancia).text =
+                if (vinc) "Ganancia real (vinculado)" else "Ganancia de la heladería"
+            barras2.setDatos(etiquetas, listOf(if (vinc) sTotal else sGanH),
+                listOf(if (vinc) "Heladería + personal" else "Ingresos − gastos heladería"), intArrayOf(cPrimario))
+            findViewById<TextView>(R.id.lblAnalisis).text = "Picos de venta"
+
+            pico("Cerpi", sCerpi, "mejor")
+            pico("Cementerio", sCementerio, "mejor")
+            pico("Total heladería", DoubleArray(12) { sCerpi[it] + sCementerio[it] }, "mejor")
+            val ultimo = sCerpi[11] + sCementerio[11]
+            val anterior = sCerpi[10] + sCementerio[10]
+            if (anterior > 0) {
+                val cambio = (ultimo - anterior) / anterior * 100
+                sb.append(String.format(java.util.Locale.US,
+                    "• Este %s va %s%.0f%% frente al anterior.\n", unidad, if (cambio >= 0) "+" else "", cambio))
+            }
+            val dias = db.ingresosPorDiaSemana(desde, hasta)
+            val mejorDia = dias.indices.maxByOrNull { dias[it] } ?: 0
+            if (dias[mejorDia] > 0) {
+                sb.append("• Día que más se vende: ${Formato.DIAS[mejorDia]} (promedio ${Formato.bs(dias[mejorDia])}).\n")
+            }
+            val H = DatabaseHelper.HELADERIA
+            val tm = db.suma(desde, hasta, DatabaseHelper.INGRESO, ambito = H, turno = DatabaseHelper.MANANA)
+            val tt = db.suma(desde, hasta, DatabaseHelper.INGRESO, ambito = H, turno = DatabaseHelper.TARDE)
+            if (tm + tt > 0) {
+                sb.append("• Turno más fuerte: ${if (tm >= tt) "Mañana" else "Tarde"} ")
+                sb.append("(Mañana ${Formato.bs(tm)} · Tarde ${Formato.bs(tt)}).")
+            }
+        } else {
+            findViewById<TextView>(R.id.lblBarras).text = "Personal: ingresos vs gastos"
+            barras.setDatos(etiquetas, listOf(sIngP, sGasP), listOf("Ingresos", "Gastos"),
+                intArrayOf(cIngreso, cPersonal))
+            findViewById<TextView>(R.id.lblBarrasGanancia).text =
+                if (vinc) "Saldo total (vinculado)" else "Saldo personal"
+            barras2.setDatos(etiquetas, listOf(if (vinc) sTotal else DoubleArray(12) { sIngP[it] - sGasP[it] }),
+                listOf(if (vinc) "Personal + heladería" else "Ingresos − gastos"), intArrayOf(cPrimario))
+            findViewById<TextView>(R.id.lblAnalisis).text = "Resumen de temporadas"
+
+            pico("Gastos personales", sGasP, "más alto en")
+            pico("Ingresos personales", sIngP, "más alto en")
+            if (sGasP[10] > 0) {
+                val cambio = (sGasP[11] - sGasP[10]) / sGasP[10] * 100
+                sb.append(String.format(java.util.Locale.US,
+                    "• Gastos de este %s: %s%.0f%% frente al anterior.\n", unidad, if (cambio >= 0) "+" else "", cambio))
+            }
         }
         findViewById<TextView>(R.id.txtAnalisis).text =
-            if (sb.isEmpty()) "Registra ingresos para ver las temporadas." else sb.toString().trimEnd()
+            if (sb.isEmpty()) "Registra movimientos para ver las temporadas." else sb.toString().trimEnd()
     }
 
     // ------------------------------------------------------------------ Utilidades
@@ -389,6 +484,11 @@ class MainActivity : AppCompatActivity() {
         val ini = (c.clone() as Calendar).apply { set(Calendar.DAY_OF_MONTH, 1) }
         val fin = (c.clone() as Calendar).apply { set(Calendar.DAY_OF_MONTH, getActualMaximum(Calendar.DAY_OF_MONTH)) }
         return Formato.iso(ini) to Formato.iso(fin)
+    }
+
+    override fun onSupportNavigateUp(): Boolean {
+        finish()
+        return true
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {

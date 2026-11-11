@@ -124,7 +124,7 @@ class DatabaseHelper private constructor(ctx: Context) :
         val mapa = HashMap<String, DoubleArray>()
         readableDatabase.rawQuery(
             "SELECT $agrupar AS clave, lugar, SUM(monto) FROM movimientos " +
-                "WHERE tipo='$INGRESO' AND fecha BETWEEN ? AND ? GROUP BY clave, lugar",
+                "WHERE tipo='$INGRESO' AND ambito='$HELADERIA' AND fecha BETWEEN ? AND ? GROUP BY clave, lugar",
             arrayOf(desde, hasta)
         ).use { c ->
             while (c.moveToNext()) {
@@ -148,12 +148,29 @@ class DatabaseHelper private constructor(ctx: Context) :
         return mapa
     }
 
+    /** Ingresos y gastos de un ámbito agrupados por periodo: clave -> [ingresos, gastos]. */
+    fun totalesAgrupados(agrupar: String, ambito: String, desde: String, hasta: String): Map<String, DoubleArray> {
+        require(agrupar == POR_MES || agrupar == POR_SEMANA)
+        val mapa = HashMap<String, DoubleArray>()
+        readableDatabase.rawQuery(
+            "SELECT $agrupar AS clave, tipo, SUM(monto) FROM movimientos " +
+                "WHERE ambito=? AND fecha BETWEEN ? AND ? GROUP BY clave, tipo",
+            arrayOf(ambito, desde, hasta)
+        ).use { c ->
+            while (c.moveToNext()) {
+                val arr = mapa.getOrPut(c.getString(0)) { DoubleArray(2) }
+                arr[if (c.getString(1) == GASTO) 1 else 0] += c.getDouble(2)
+            }
+        }
+        return mapa
+    }
+
     /** Promedio de ingresos por día de la semana (0=domingo … 6=sábado). */
     fun ingresosPorDiaSemana(desde: String, hasta: String): DoubleArray {
         val tot = DoubleArray(7)
         readableDatabase.rawQuery(
             "SELECT CAST(strftime('%w',fecha) AS INTEGER), SUM(monto), COUNT(DISTINCT fecha) " +
-                "FROM movimientos WHERE tipo='$INGRESO' AND fecha BETWEEN ? AND ? GROUP BY 1",
+                "FROM movimientos WHERE tipo='$INGRESO' AND ambito='$HELADERIA' AND fecha BETWEEN ? AND ? GROUP BY 1",
             arrayOf(desde, hasta)
         ).use { c ->
             while (c.moveToNext()) {

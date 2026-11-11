@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:padding="24dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/app_name"
+            android:textColor="@color/primario"
+            android:textSize="28sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:layout_marginBottom="28dp"
+            android:gravity="center"
+            android:text="¿Qué vas a registrar o revisar?"
+            android:textColor="@color/texto_suave"
+            android:textSize="16sp" />
+
+        <Button
+            android:id="@+id/btnTrabajo"
+            android:layout_width="match_parent"
+            android:layout_height="96dp"
+            android:backgroundTint="@color/primario"
+            android:text="Trabajo\nHeladería · Cerpi y Cementerio"
+            android:textAllCaps="false"
+            android:textSize="18sp" />
+
+        <Button
+            android:id="@+id/btnPersonal"
+            android:layout_width="match_parent"
+            android:layout_height="96dp"
+            android:layout_marginTop="14dp"
+            android:backgroundTint="@color/personal"
+            android:text="Personal\nMis ingresos y gastos"
+            android:textAllCaps="false"
+            android:textSize="18sp" />
+
+        <LinearLayout
+            style="@style/Tarjeta"
+            android:layout_marginTop="28dp">
+
+            <com.google.android.material.switchmaterial.SwitchMaterial
+                android:id="@+id/swVincular"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/vincular"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/txtVincular"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:textColor="@color/texto_suave"
+                android:textSize="13sp" />
+        </LinearLayout>
+    </LinearLayout>
+</ScrollView>

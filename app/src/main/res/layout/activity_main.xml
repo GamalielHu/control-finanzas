@@ -187,18 +187,18 @@
                 android:textColor="@color/texto_suave" />
 
             <LinearLayout style="@style/Tarjeta">
-                <TextView style="@style/TituloTarjeta" android:text="Ganancia real" />
+                <TextView android:id="@+id/lblBalance" style="@style/TituloTarjeta" android:text="Ganancia real" />
                 <LinearLayout
                     android:id="@+id/contBalance"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical" />
                 <com.google.android.material.switchmaterial.SwitchMaterial
-                    android:id="@+id/swPersonales"
+                    android:id="@+id/swVincular"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="6dp"
-                    android:text="@string/restar_personales" />
+                    android:text="@string/vincular" />
                 <TextView
                     android:id="@+id/txtGananciaReal"
                     android:layout_width="match_parent"
@@ -217,14 +217,14 @@
             </LinearLayout>
 
             <LinearLayout style="@style/Tarjeta">
-                <TextView style="@style/TituloTarjeta" android:text="¿En qué se gasta?" />
+                <TextView android:id="@+id/lblTortaGastos" style="@style/TituloTarjeta" android:text="¿En qué se gasta?" />
                 <com.gamaliel.finanzas.PieChartView
                     android:id="@+id/tortaGastos"
                     android:layout_width="match_parent"
                     android:layout_height="190dp" />
             </LinearLayout>
 
-            <LinearLayout style="@style/Tarjeta">
+            <LinearLayout android:id="@+id/cardLugares" style="@style/Tarjeta">
                 <TextView style="@style/TituloTarjeta" android:text="Ingresos por lugar" />
                 <com.gamaliel.finanzas.PieChartView
                     android:id="@+id/tortaLugares"
@@ -232,7 +232,7 @@
                     android:layout_height="190dp" />
             </LinearLayout>
 
-            <LinearLayout style="@style/Tarjeta">
+            <LinearLayout android:id="@+id/cardTurnos" style="@style/Tarjeta">
                 <TextView style="@style/TituloTarjeta" android:text="Ingresos por turno" />
                 <LinearLayout
                     android:id="@+id/contTurnos"
@@ -268,7 +268,7 @@
             </RadioGroup>
 
             <LinearLayout style="@style/Tarjeta">
-                <TextView style="@style/TituloTarjeta" android:text="Ventas: Cerpi vs Cementerio" />
+                <TextView android:id="@+id/lblBarras" style="@style/TituloTarjeta" android:text="Ventas: Cerpi vs Cementerio" />
                 <com.gamaliel.finanzas.BarChartView
                     android:id="@+id/barras"
                     android:layout_width="match_parent"
@@ -276,7 +276,7 @@
             </LinearLayout>
 
             <LinearLayout style="@style/Tarjeta">
-                <TextView style="@style/TituloTarjeta" android:text="Ganancia de la heladería" />
+                <TextView android:id="@+id/lblBarrasGanancia" style="@style/TituloTarjeta" android:text="Ganancia de la heladería" />
                 <com.gamaliel.finanzas.BarChartView
                     android:id="@+id/barrasGanancia"
                     android:layout_width="match_parent"
@@ -284,7 +284,7 @@
             </LinearLayout>
 
             <LinearLayout style="@style/Tarjeta">
-                <TextView style="@style/TituloTarjeta" android:text="Picos de venta" />
+                <TextView android:id="@+id/lblAnalisis" style="@style/TituloTarjeta" android:text="Picos de venta" />
                 <TextView
                     android:id="@+id/txtAnalisis"
                     android:layout_width="match_parent"

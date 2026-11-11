@@ -10,7 +10,7 @@
         android:theme="@style/Tema">
 
         <activity
-            android:name=".MainActivity"
+            android:name=".InicioActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -19,8 +19,12 @@
         </activity>
 
         <activity
+            android:name=".MainActivity"
+            android:parentActivityName=".InicioActivity" />
+
+        <activity
             android:name=".IngresoActivity"
-            android:label="@string/titulo_ingreso"
+            android:label="Ingreso"
             android:parentActivityName=".MainActivity"
             android:windowSoftInputMode="adjustResize" />
 

@@ -19,6 +19,12 @@
                 android:layout_height="wrap_content"
                 android:textSize="16sp" />
 
+            <LinearLayout
+                android:id="@+id/contLugarTurno"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
             <TextView style="@style/Etiqueta" android:text="@string/lugar" />
             <RadioGroup
                 android:id="@+id/grupoLugar"
@@ -38,6 +44,7 @@
                 <RadioButton android:id="@+id/rbManana" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="@string/manana" android:textSize="16sp" />
                 <RadioButton android:id="@+id/rbTarde" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="@string/tarde" android:textSize="16sp" />
             </RadioGroup>
+            </LinearLayout>
 
             <TextView style="@style/Etiqueta" android:text="@string/monto" />
             <EditText

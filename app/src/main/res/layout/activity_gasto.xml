@@ -19,7 +19,7 @@
                 android:layout_height="wrap_content"
                 android:textSize="16sp" />
 
-            <TextView style="@style/Etiqueta" android:text="@string/categoria" />
+            <TextView android:id="@+id/lblCategoria" style="@style/Etiqueta" android:text="@string/categoria" />
             <RadioGroup
                 android:id="@+id/grupoCategoria"
                 android:layout_width="match_parent"

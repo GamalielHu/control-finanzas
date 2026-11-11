@@ -35,8 +35,19 @@ class GastoActivity : AppCompatActivity() {
 
         id = intent.getLongExtra("id", 0L)
         val existente = if (id != 0L) db.obtener(id) else null
+        // La categoría la define el modo elegido al entrar (Trabajo o Personal).
+        val modo = existente?.ambito ?: intent.getStringExtra(Modo.EXTRA)
+        if (modo != null) {
+            grupoCategoria.check(if (modo == Modo.PERSONAL) R.id.rbPersonal else R.id.rbHeladeria)
+            grupoCategoria.visibility = View.GONE
+            findViewById<View>(R.id.lblCategoria).visibility = View.GONE
+            val personal = modo == Modo.PERSONAL
+            title = (if (existente != null) "Editar gasto " else "Gasto ") +
+                (if (personal) "personal" else "de la heladería")
+            if (personal) edtDescripcion.hint = "Ej.: almuerzo, pasaje, recarga"
+            else edtDescripcion.hint = "Ej.: leche, conos, azúcar, luz"
+        }
         if (existente != null) {
-            title = "Editar gasto"
             fecha = existente.fecha
             grupoCategoria.check(
                 if (existente.ambito == DatabaseHelper.PERSONAL) R.id.rbPersonal else R.id.rbHeladeria
