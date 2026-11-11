@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Control Finanzas</string>
+    <string name="titulo_ingreso">Ingreso de la heladería</string>
+    <string name="titulo_gasto">Gasto</string>
+    <string name="tab_movimientos">Movimientos</string>
+    <string name="tab_resumen">Resumen</string>
+    <string name="tab_temporadas">Temporadas</string>
+    <string name="mas_ingreso">+ Ingreso</string>
+    <string name="mas_gasto">+ Gasto</string>
+    <string name="fecha">Fecha</string>
+    <string name="lugar">Lugar</string>
+    <string name="turno">Turno</string>
+    <string name="cerpi">Cerpi</string>
+    <string name="cementerio">Cementerio</string>
+    <string name="manana">Mañana</string>
+    <string name="tarde">Tarde</string>
+    <string name="monto">Monto (Bs)</string>
+    <string name="nota">Nota u observación (opcional)</string>
+    <string name="categoria">Categoría</string>
+    <string name="heladeria">Heladería</string>
+    <string name="personal">Personal</string>
+    <string name="descripcion">Descripción</string>
+    <string name="guardar">Guardar</string>
+    <string name="eliminar">Eliminar</string>
+    <string name="restar_personales">Restar también los gastos personales</string>
+    <string name="mensual">Mensual (12 meses)</string>
+    <string name="semanal">Semanal (12 semanas)</string>
+    <string name="hoy">Hoy</string>
+    <string name="semana">Semana</string>
+    <string name="mes">Mes</string>
+    <string name="anio">Año</string>
+    <string name="todo">Todo</string>
+    <string name="exportar">Exportar (CSV)</string>
+    <string name="sin_movimientos">Sin movimientos en este mes.\nToca + Ingreso o + Gasto.</string>
+</resources>

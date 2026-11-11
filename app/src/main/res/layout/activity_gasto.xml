@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <LinearLayout style="@style/Tarjeta">
+
+            <TextView style="@style/Etiqueta" android:layout_marginTop="0dp" android:text="@string/fecha" />
+            <Button
+                android:id="@+id/btnFecha"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="16sp" />
+
+            <TextView style="@style/Etiqueta" android:text="@string/categoria" />
+            <RadioGroup
+                android:id="@+id/grupoCategoria"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+                <RadioButton android:id="@+id/rbHeladeria" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="@string/heladeria" android:textSize="16sp" />
+                <RadioButton android:id="@+id/rbPersonal" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="@string/personal" android:textSize="16sp" />
+            </RadioGroup>
+
+            <TextView style="@style/Etiqueta" android:text="@string/monto" />
+            <EditText
+                android:id="@+id/edtMonto"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="0,00"
+                android:importantForAutofill="no"
+                android:inputType="numberDecimal"
+                android:textSize="22sp" />
+
+            <TextView style="@style/Etiqueta" android:text="@string/descripcion" />
+            <EditText
+                android:id="@+id/edtDescripcion"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Ej.: leche, conos, pasaje, almuerzo"
+                android:importantForAutofill="no"
+                android:inputType="textCapSentences|textMultiLine"
+                android:maxLines="4" />
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/btnGuardar"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:backgroundTint="@color/gasto"
+            android:text="@string/guardar"
+            android:textSize="16sp" />
+
+        <Button
+            android:id="@+id/btnEliminar"
+            style="@style/Widget.MaterialComponents.Button.TextButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="@string/eliminar"
+            android:textColor="@color/gasto"
+            android:visibility="gone" />
+    </LinearLayout>
+</ScrollView>

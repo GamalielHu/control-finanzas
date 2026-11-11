@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="primario">#00897B</color>
+    <color name="primario_oscuro">#00695C</color>
+    <color name="acento">#FF7043</color>
+    <color name="fondo">#F4F6F6</color>
+    <color name="tarjeta">#FFFFFF</color>
+    <color name="texto">#212121</color>
+    <color name="texto_suave">#757575</color>
+    <color name="ingreso">#2E7D32</color>
+    <color name="gasto">#C62828</color>
+    <color name="cerpi">#1E88E5</color>
+    <color name="cementerio">#FB8C00</color>
+    <color name="heladeria">#E53935</color>
+    <color name="personal">#8E24AA</color>
+</resources>

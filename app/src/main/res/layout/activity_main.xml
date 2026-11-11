@@ -1,0 +1,298 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <com.google.android.material.tabs.TabLayout
+        android:id="@+id/tabs"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/primario"
+        app:tabIndicatorColor="#FFFFFF"
+        app:tabSelectedTextColor="#FFFFFF"
+        app:tabTextColor="#B2DFDB"
+        app:tabMode="fixed" />
+
+    <!-- ===== Movimientos ===== -->
+    <LinearLayout
+        android:id="@+id/panelMovimientos"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:padding="8dp">
+
+            <Button
+                android:id="@+id/btnMesAnterior"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
+                android:layout_width="56dp"
+                android:layout_height="wrap_content"
+                android:text="◀" />
+
+            <TextView
+                android:id="@+id/txtMes"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:textColor="@color/texto"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <Button
+                android:id="@+id/btnMesSiguiente"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
+                android:layout_width="56dp"
+                android:layout_height="wrap_content"
+                android:text="▶" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="12dp"
+            android:layout_marginRight="12dp"
+            android:background="@drawable/fondo_tarjeta"
+            android:orientation="horizontal"
+            android:padding="10dp">
+
+            <TextView
+                android:id="@+id/txtMesIngresos"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:textColor="@color/ingreso"
+                android:textSize="13sp" />
+
+            <TextView
+                android:id="@+id/txtMesGastos"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:textColor="@color/gasto"
+                android:textSize="13sp" />
+
+            <TextView
+                android:id="@+id/txtMesNeto"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:textColor="@color/texto"
+                android:textSize="13sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1">
+
+            <ListView
+                android:id="@+id/lista"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:divider="@null"
+                android:dividerHeight="0dp"
+                android:paddingLeft="12dp"
+                android:paddingRight="12dp"
+                android:paddingTop="8dp"
+                android:clipToPadding="false" />
+
+            <TextView
+                android:id="@+id/txtVacio"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:text="@string/sin_movimientos"
+                android:textColor="@color/texto_suave"
+                android:visibility="gone" />
+        </FrameLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:padding="8dp">
+
+            <Button
+                android:id="@+id/btnNuevoIngreso"
+                android:layout_width="0dp"
+                android:layout_height="56dp"
+                android:layout_marginEnd="4dp"
+                android:layout_weight="1"
+                android:backgroundTint="@color/ingreso"
+                android:text="@string/mas_ingreso"
+                android:textSize="16sp" />
+
+            <Button
+                android:id="@+id/btnNuevoGasto"
+                android:layout_width="0dp"
+                android:layout_height="56dp"
+                android:layout_marginStart="4dp"
+                android:layout_weight="1"
+                android:backgroundTint="@color/gasto"
+                android:text="@string/mas_gasto"
+                android:textSize="16sp" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- ===== Resumen ===== -->
+    <ScrollView
+        android:id="@+id/panelResumen"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="12dp">
+
+            <HorizontalScrollView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:scrollbars="none">
+
+                <RadioGroup
+                    android:id="@+id/grupoPeriodo"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <RadioButton android:id="@+id/perHoy" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/hoy" />
+                    <RadioButton android:id="@+id/perSemana" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/semana" />
+                    <RadioButton android:id="@+id/perMes" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/mes" />
+                    <RadioButton android:id="@+id/perAnio" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/anio" />
+                    <RadioButton android:id="@+id/perTodo" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/todo" />
+                </RadioGroup>
+            </HorizontalScrollView>
+
+            <TextView
+                android:id="@+id/txtRangoResumen"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:textColor="@color/texto_suave" />
+
+            <LinearLayout style="@style/Tarjeta">
+                <TextView style="@style/TituloTarjeta" android:text="Ganancia real" />
+                <LinearLayout
+                    android:id="@+id/contBalance"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical" />
+                <com.google.android.material.switchmaterial.SwitchMaterial
+                    android:id="@+id/swPersonales"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:text="@string/restar_personales" />
+                <TextView
+                    android:id="@+id/txtGananciaReal"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:gravity="center"
+                    android:textSize="24sp"
+                    android:textStyle="bold" />
+                <TextView
+                    android:id="@+id/txtGananciaNota"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:textColor="@color/texto_suave"
+                    android:textSize="12sp" />
+            </LinearLayout>
+
+            <LinearLayout style="@style/Tarjeta">
+                <TextView style="@style/TituloTarjeta" android:text="¿En qué se gasta?" />
+                <com.gamaliel.finanzas.PieChartView
+                    android:id="@+id/tortaGastos"
+                    android:layout_width="match_parent"
+                    android:layout_height="190dp" />
+            </LinearLayout>
+
+            <LinearLayout style="@style/Tarjeta">
+                <TextView style="@style/TituloTarjeta" android:text="Ingresos por lugar" />
+                <com.gamaliel.finanzas.PieChartView
+                    android:id="@+id/tortaLugares"
+                    android:layout_width="match_parent"
+                    android:layout_height="190dp" />
+            </LinearLayout>
+
+            <LinearLayout style="@style/Tarjeta">
+                <TextView style="@style/TituloTarjeta" android:text="Ingresos por turno" />
+                <LinearLayout
+                    android:id="@+id/contTurnos"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical" />
+            </LinearLayout>
+        </LinearLayout>
+    </ScrollView>
+
+    <!-- ===== Temporadas ===== -->
+    <ScrollView
+        android:id="@+id/panelTemporadas"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="12dp">
+
+            <RadioGroup
+                android:id="@+id/grupoTemporada"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:orientation="horizontal">
+
+                <RadioButton android:id="@+id/temMensual" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="@string/mensual" />
+                <RadioButton android:id="@+id/temSemanal" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="@string/semanal" />
+            </RadioGroup>
+
+            <LinearLayout style="@style/Tarjeta">
+                <TextView style="@style/TituloTarjeta" android:text="Ventas: Cerpi vs Cementerio" />
+                <com.gamaliel.finanzas.BarChartView
+                    android:id="@+id/barras"
+                    android:layout_width="match_parent"
+                    android:layout_height="280dp" />
+            </LinearLayout>
+
+            <LinearLayout style="@style/Tarjeta">
+                <TextView style="@style/TituloTarjeta" android:text="Ganancia de la heladería" />
+                <com.gamaliel.finanzas.BarChartView
+                    android:id="@+id/barrasGanancia"
+                    android:layout_width="match_parent"
+                    android:layout_height="240dp" />
+            </LinearLayout>
+
+            <LinearLayout style="@style/Tarjeta">
+                <TextView style="@style/TituloTarjeta" android:text="Picos de venta" />
+                <TextView
+                    android:id="@+id/txtAnalisis"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:lineSpacingExtra="4dp"
+                    android:textColor="@color/texto"
+                    android:textSize="14sp" />
+            </LinearLayout>
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>
